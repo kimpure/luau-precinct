@@ -1,0 +1,5 @@
+syntax = "Luau"
+line_endings = "Unix"
+
+[sort_requires]
+enabled = true

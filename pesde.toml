@@ -1,0 +1,15 @@
+name = "kimpure/precinct"
+version = "0.1.0"
+authors = ["kimpure"]
+license = "MIT"
+includes = ["README.md", "pesde.toml", "src/**", "LICENSE"]
+
+[target]
+environment = "luau"
+lib = "src/lib.luau"
+
+[indices]
+default = "https://github.com/pesde-pkg/index"
+
+[dev_dependencies]
+asciitable = { name = "kimpure/asciitable", version = "^0.2.3" }
