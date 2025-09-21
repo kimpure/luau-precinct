@@ -2,7 +2,7 @@ name = "kimpure/precinct"
 version = "0.1.0"
 authors = ["kimpure"]
 license = "MIT"
-includes = ["README.md", "pesde.toml", "src/**", "LICENSE"]
+includes = ["README.md", "pesde.toml", "src/**", "LICENCE"]
 
 [target]
 environment = "luau"
