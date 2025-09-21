@@ -21,4 +21,5 @@ print(dependencies)
 ```
 
 ## Dependencies
-- [poke](https://github.com/jackdotink/poke/) - Luau parser
+- [poke](https://github.com/jackdotink/poke/) - luau parser
+- [node-precinct](https://github.com/dependents/node-precinct) - got inspired
