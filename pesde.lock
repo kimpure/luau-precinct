@@ -2,7 +2,7 @@
 # It is not intended for manual editing.
 format = 2
 name = "kimpure/precinct"
-version = "0.1.0"
+version = "0.1.2"
 target = "luau"
 
 [graph."jiwonz/greentea_luau@0.2.0 luau".pkg_ref]
