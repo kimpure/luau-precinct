@@ -1,6 +1,6 @@
-local ast = require("./poke/ast/ast")
-local parser = require("./poke/ast/parser")
-local source = require("./poke/ast/source")
+local ast = require("../vendor/poke/ast/ast")
+local parser = require("../vendor/poke/ast/parser")
+local source = require("../vendor/poke/ast/source")
 
 local serch_source = ""
 local serch = {}
