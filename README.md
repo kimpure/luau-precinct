@@ -2,7 +2,7 @@
 Finding code dependencies in pure luau
 
 ## Installation
-Install via [pesde](https://pesde.dev/packages/jiwonz/pathfs)
+Install via [pesde](https://pesde.dev/packages/kimpure/precinct)
 ```sh
 pesde add kimpure/precinct
 ```
