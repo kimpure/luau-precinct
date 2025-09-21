@@ -12,11 +12,11 @@ pesde add kimpure/precinct
 local precinct = require "path to require"
 
 local dependencies = precinct([[
-require"module"
+require"./module"
 require"lib"
 ]])
 
--- { '"module"', '"lib"' }
+-- { './module', 'lib' }
 print(dependencies)
 ```
 
