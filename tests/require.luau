@@ -11,3 +11,5 @@ local f = if true then
     require("f") :: any
 else
     nil
+
+local g = require([[g]]) :: any

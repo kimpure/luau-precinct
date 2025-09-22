@@ -327,7 +327,14 @@ local function precinct(input: string): { string }
 			end
 
 			if arg.kind == "string" then
-				table.insert(dependencies, string.sub(input, arg.string.span.x + 2, arg.string.span.y - 1))
+				local str = string.sub(input, arg.string.span.x + 1, arg.string.span.y)
+
+				if string.sub(str, 1, 2) == "[[" then
+					table.insert(dependencies, string.sub(str, 3, -3))
+				else
+					table.insert(dependencies, string.sub(str, 2, -2))
+				end
+
 				continue
 			end
 
