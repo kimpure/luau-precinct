@@ -20,6 +20,6 @@ require"lib"
 print(dependencies)
 ```
 
-## Dependencies
+## Credits
 - [poke](https://github.com/jackdotink/poke/) - luau parser
 - [node-precinct](https://github.com/dependents/node-precinct) - got inspired
