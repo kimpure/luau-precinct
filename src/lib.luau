@@ -155,6 +155,8 @@ end
 
 local function precinct(input: string): { string }
 	search_source = input
+	search_dependencies = {}
+	
 	local result = parser.safe(source.create(input), parser.parse_chunk)
 
 	if not result.success then
