@@ -2,22 +2,15 @@ local ast = require("../vendor/poke/ast/ast")
 local parser = require("../vendor/poke/ast/parser")
 local source = require("../vendor/poke/ast/source")
 
-local serch_source = ""
-local serch = {}
+local search_dependencies: { ast.Var } = {}
+local search_source = ""
+local search = {}
 
-function serch.var(var: ast.Var): { ast.Var }?
-	local serch_list: { ast.Var } = {}
-
+function search.var(var: ast.Var)
 	if var.root.kind ~= "name" then
-		local serchs = serch.expression(var.root.expr)
-
-		if serchs then
-			for i = 1, #serchs do
-				table.insert(serch_list, serchs[i])
-			end
-		end
+		search.expression(var.root.expr)
 	else
-		if string.sub(serch_source, var.root.name.span.x + 1, var.root.name.span.y) ~= "require" then
+		if string.sub(search_source, var.root.name.span.x + 1, var.root.name.span.y) ~= "require" then
 			return
 		end
 
@@ -31,184 +24,83 @@ function serch.var(var: ast.Var): { ast.Var }?
 			return
 		end
 
-		table.insert(serch_list, var)
+		table.insert(search_dependencies, var)
 	end
-
-	return serch_list
 end
 
-function serch.expression(expression: ast.Expr): { ast.Var }?
-	local serch_list: { ast.Var } = {}
-
+function search.expression(expression: ast.Expr)
 	if expression.kind == "table" then
 		local fields = expression.table.fields
 
 		for i = 1, #fields do
-			local serchs = serch.expression(fields[i].value)
-
-			if serchs then
-				for j = 1, #serchs do
-					table.insert(serch_list, serchs[j])
-				end
-			end
+			search.expression(fields[i].value)
 		end
 	end
 
 	if expression.kind == "function" then
-		local serchs = serch.statements(expression.body.block.stats)
-
-		for i = 1, #serchs do
-			table.insert(serch_list, serchs[i])
-		end
+		search.statements(expression.body.block.stats)
 	end
 
 	if expression.kind == "ifelse" then
 		local branches = expression.branches
 
 		for i = 1, #expression.branches do
-			local branche = branches[i]
-			local serchs = serch.expression(branche.body)
-
-			if serchs then
-				for j = 1, #serchs do
-					table.insert(serch_list, serchs[j])
-				end
-			end
+			search.expression(branches[i].body)
 		end
 
-		local serchs = serch.expression(expression.else_body)
-
-		if serchs then
-			for i = 1, #serchs do
-				table.insert(serch_list, serchs[i])
-			end
-		end
+		search.expression(expression.else_body)
 	end
 
 	if expression.kind == "assertion" then
-		local serchs = serch.expression(expression.expr)
-
-		if serchs then
-			for i = 1, #serchs do
-				table.insert(serch_list, serchs[i])
-			end
-		end
+		search.expression(expression.expr)
 	end
 
 	if expression.kind == "unary" then
-		local serchs = serch.expression(expression.expr)
-
-		if serchs then
-			for i = 1, #serchs do
-				table.insert(serch_list, serchs[i])
-			end
-		end
+		search.expression(expression.expr)
 	end
 
 	if expression.kind == "binary" then
-		do
-			local serchs = serch.expression(expression.left)
-
-			if serchs then
-				for i = 1, #serchs do
-					table.insert(serch_list, serchs[i])
-				end
-			end
-		end
-
-		do
-			local serchs = serch.expression(expression.right)
-
-			if serchs then
-				for i = 1, #serchs do
-					table.insert(serch_list, serchs[i])
-				end
-			end
-		end
+		search.expression(expression.left)
+		search.expression(expression.right)
 	end
 
 	if expression.kind == "var" then
-		local serchs = serch.var(expression.var)
-
-		if serchs then
-			for i = 1, #serchs do
-				table.insert(serch_list, serchs[i])
-			end
-		end
+		search.var(expression.var)
 	end
-
-	return serch_list
 end
 
-function serch.statement(statement: ast.Stat): { ast.Var }
-	local serch_list: { ast.Var } = {}
-
+function search.statement(statement: ast.Stat)
 	if statement.kind == "assign" then
 		for i = 1, #statement.right do
-			local node = statement.right[i]
-
-			local serchs = serch.expression(node)
-
-			if serchs then
-				for j = 1, #serchs do
-					table.insert(serch_list, serchs[i])
-				end
-			end
+			search.expression(statement.right[i])
 		end
 	end
 
 	if statement.kind == "call" then
-		local serchs = serch.var(statement.call)
-
-		if serchs then
-			for i = 1, #serchs do
-				table.insert(serch_list, serchs[i])
-			end
-		end
+		search.var(statement.call)
 	end
 
 	if statement.kind == "do" then
-		local serchs = serch.statements(statement.block.stats)
-
-		for i = 1, #serchs do
-			table.insert(serch_list, serchs[i])
-		end
+		search.statements(statement.block.stats)
 	end
 
 	if statement.kind == "while" then
-		local serchs = serch.statements(statement.block.stats)
-
-		for i = 1, #serchs do
-			table.insert(serch_list, serchs[i])
-		end
+		search.statements(statement.block.stats)
 	end
 
 	if statement.kind == "repeat" then
-		local serchs = serch.statements(statement.block.stats)
-
-		for i = 1, #serchs do
-			table.insert(serch_list, serchs[i])
-		end
+		search.statements(statement.block.stats)
 	end
 
 	if statement.kind == "if" then
 		local branches = statement.branches
 
 		for i = 1, #branches do
-			local branche = branches[i]
-			local serchs = serch.statements(branche.block.stats)
-
-			for i = 1, #serchs do
-				table.insert(serch_list, serchs[i])
-			end
+			search.statements(branches[i].block.stats)
 		end
 
 		if statement.else_block then
-			local serchs = serch.statements(statement.else_block.stats)
-
-			for i = 1, #serchs do
-				table.insert(serch_list, serchs[i])
-			end
+			search.statements(statement.else_block.stats)
 		end
 	end
 
@@ -216,12 +108,7 @@ function serch.statement(statement: ast.Stat): { ast.Var }
 		local statements = statement.block.stats
 
 		for i = 1, #statements do
-			local statement_node = statements[i]
-			local serch = serch.statement(statement_node)
-
-			for j = 1, #serch do
-				table.insert(serch_list, serch[j])
-			end
+			search.statement(statements[i])
 		end
 	end
 
@@ -229,12 +116,7 @@ function serch.statement(statement: ast.Stat): { ast.Var }
 		local statements = statement.block.stats
 
 		for i = 1, #statements do
-			local statement_node = statements[i]
-			local serch = serch.statement(statement_node)
-
-			for j = 1, #serch do
-				table.insert(serch_list, serch[j])
-			end
+			search.statement(statements[i])
 		end
 	end
 
@@ -242,12 +124,7 @@ function serch.statement(statement: ast.Stat): { ast.Var }
 		local statements = statement.body.block.stats
 
 		for i = 1, #statements do
-			local statement_node = statements[i]
-			local serch = serch.statement(statement_node)
-
-			for j = 1, #serch do
-				table.insert(serch_list, serch[j])
-			end
+			search.statement(statements[i])
 		end
 	end
 
@@ -255,53 +132,29 @@ function serch.statement(statement: ast.Stat): { ast.Var }
 		local statements = statement.body.block.stats
 
 		for i = 1, #statements do
-			local statement_node = statements[i]
-			local serch = serch.statement(statement_node)
-
-			for j = 1, #serch do
-				table.insert(serch_list, serch[j])
-			end
+			search.statement(statements[i])
 		end
 	end
 
 	if statement.kind == "localvariable" then
 		if not statement.exprs then
-			return {}
+			return
 		end
 
 		for i = 1, #statement.exprs do
-			local node = statement.exprs[i]
-
-			local serchs = serch.expression(node)
-
-			if serchs then
-				for j = 1, #serchs do
-					table.insert(serch_list, serchs[i])
-				end
-			end
+			search.expression(statement.exprs[i])
 		end
 	end
-
-	return serch_list
 end
 
-function serch.statements(statements: { ast.Stat }): { ast.Var }
-	local serch_list = {}
-
+function search.statements(statements: { ast.Stat })
 	for i = 1, #statements do
-		local statement_node = statements[i]
-		local serch = serch.statement(statement_node)
-
-		for j = 1, #serch do
-			table.insert(serch_list, serch[j])
-		end
+		search.statement(statements[i])
 	end
-
-	return serch_list
 end
 
 local function precinct(input: string): { string }
-	serch_source = input
+	search_source = input
 	local result = parser.safe(source.create(input), parser.parse_chunk)
 
 	if not result.success then
@@ -309,12 +162,12 @@ local function precinct(input: string): { string }
 	end
 
 	local ast = result.result
-
-	local serchs = serch.statements(ast.stats)
+	
 	local dependencies: { string } = {}
+	search.statements(ast.stats)
 
-	for i = 1, #serchs do
-		local var = serchs[i]
+	for i = 1, #search_dependencies do
+		local var = search_dependencies[i]
 
 		local suffixe = var.suffixes[1]
 
